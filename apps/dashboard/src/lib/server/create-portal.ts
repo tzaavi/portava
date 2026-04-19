@@ -11,8 +11,8 @@ interface CreatePortalInput {
   brand_color: string
 }
 
-export const createPortal = createServerFn()
-  .handler(async ({ data }: { data: CreatePortalInput }) => {
+export const createPortal = createServerFn().handler(
+  async ({ data }: { data: CreatePortalInput }) => {
     const slug = data.client_name
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
@@ -40,4 +40,5 @@ export const createPortal = createServerFn()
     // TODO: send magic-link invite email via Resend
 
     return portal
-  })
+  }
+)
