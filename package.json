@@ -1,0 +1,17 @@
+{
+  "name": "portava",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev:dashboard": "pnpm --filter @portava/dashboard dev",
+    "dev:portal": "pnpm --filter @portava/portal dev",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "biome lint .",
+    "format": "biome format --write ."
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.4.12",
+    "typescript": "^6.0.3"
+  }
+}
