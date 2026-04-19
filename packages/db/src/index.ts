@@ -1,4 +1,4 @@
-// Requires Postgres 18+ for uuid7()
+// Requires Postgres 18+ for uuidv7()
 import { Kysely, PostgresDialect } from "kysely"
 import { Pool } from "pg"
 

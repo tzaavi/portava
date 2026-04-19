@@ -22,7 +22,7 @@ create type comment_source as enum ('portal', 'email');
 -- -----------------------------------------------------------------------
 
 create table agency (
-  id                          uuid primary key default uuid7(),
+  id                          uuid primary key default uuidv7(),
   firebase_uid                text not null unique,
   name                        text not null,
   subdomain                   text unique,
@@ -35,7 +35,7 @@ create table agency (
 );
 
 create table portal (
-  id                          uuid primary key default uuid7(),
+  id                          uuid primary key default uuidv7(),
   agency_id                   uuid not null references agency (id) on delete cascade,
   client_name                 text not null,
   client_email                text not null,
@@ -51,7 +51,7 @@ create table portal (
 );
 
 create table portal_session (
-  id          uuid primary key default uuid7(),
+  id          uuid primary key default uuidv7(),
   portal_id   uuid not null references portal (id) on delete cascade,
   token_hash  text not null unique,
   expires_at  timestamptz not null,
@@ -60,7 +60,7 @@ create table portal_session (
 );
 
 create table portal_file (
-  id             uuid primary key default uuid7(),
+  id             uuid primary key default uuidv7(),
   portal_id      uuid not null references portal (id) on delete cascade,
   drive_file_id  text not null,
   name           text not null,
@@ -74,7 +74,7 @@ create table portal_file (
 );
 
 create table event (
-  id            uuid primary key default uuid7(),
+  id            uuid primary key default uuidv7(),
   portal_id     uuid not null references portal (id) on delete cascade,
   file_id       uuid references portal_file (id) on delete set null,
   event_type    event_type not null,
@@ -84,7 +84,7 @@ create table event (
 );
 
 create table file_comment (
-  id          uuid primary key default uuid7(),
+  id          uuid primary key default uuidv7(),
   file_id     uuid not null references portal_file (id) on delete cascade,
   portal_id   uuid not null references portal (id) on delete cascade,
   author_type author_type not null,
