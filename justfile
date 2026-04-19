@@ -1,3 +1,5 @@
+set dotenv-load := true
+
 dev-dashboard:
     pnpm --filter @portava/dashboard dev
 
