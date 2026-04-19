@@ -21,3 +21,6 @@ db-seed:
     docker exec -i portava-db-1 psql -U portava portava < db/seed.sql
 
 db-reset-seed: db-reset db-seed
+
+db-generate:
+    pnpm --filter @portava/db generate
