@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { ExternalLink } from "lucide-react"
+import { NewPortalSheet } from "~/components/new-portal-sheet"
 import { Badge } from "~/components/ui/badge"
 import { Button } from "~/components/ui/button"
 import {
@@ -24,7 +25,7 @@ function PortalsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Portals</h1>
-        <Button>+ New portal</Button>
+        <NewPortalSheet />
       </div>
 
       <Table>
