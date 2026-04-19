@@ -1,5 +1,5 @@
-import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router"
-import * as React from "react"
+import { createRootRoute, HeadContent, Scripts } from "@tanstack/react-router"
+import type * as React from "react"
 
 export const Route = createRootRoute({
   shellComponent: RootDocument,

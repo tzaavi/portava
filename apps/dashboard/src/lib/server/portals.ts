@@ -18,10 +18,7 @@ export const getPortals = createServerFn().handler(async () => {
       "p.slug",
       "p.status",
       "p.created_at",
-      eb.fn
-        .count("pf.id")
-        .filterWhere("pf.status", "=", "awaiting_review")
-        .as("pending_count"),
+      eb.fn.count("pf.id").filterWhere("pf.status", "=", "awaiting_review").as("pending_count"),
       eb.fn.max("e.created_at").as("last_activity"),
     ])
     .orderBy("p.created_at", "desc")

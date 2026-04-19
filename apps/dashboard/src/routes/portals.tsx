@@ -57,9 +57,7 @@ function PortalsPage() {
                 )}
               </TableCell>
               <TableCell className="text-muted-foreground">
-                {portal.last_activity
-                  ? new Date(portal.last_activity).toLocaleDateString()
-                  : "—"}
+                {portal.last_activity ? new Date(portal.last_activity).toLocaleDateString() : "—"}
               </TableCell>
               <TableCell className="text-right">
                 <div className="flex items-center justify-end gap-2">
@@ -68,10 +66,12 @@ function PortalsPage() {
                     size="sm"
                     nativeButton={false}
                     render={
+                      // biome-ignore lint/a11y/useAnchorContent: children rendered by Button via render prop
                       <a
                         href={`https://drive.google.com/drive/folders/${portal.id}`}
                         target="_blank"
                         rel="noreferrer"
+                        aria-label="Open in Drive"
                       />
                     }
                   >

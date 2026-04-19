@@ -26,3 +26,12 @@ db-reset-seed: db-reset db-seed
 
 db-generate:
     pnpm --filter @portava/db generate
+
+lint:
+    pnpm biome lint
+
+format:
+    pnpm biome format --write
+
+check:
+    pnpm biome check --write

@@ -26,7 +26,20 @@
       "semicolons": "asNeeded"
     }
   },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
+  },
   "files": {
-    "includes": ["**", "!**/node_modules", "!**/.vinxi", "!**/.output", "!**/dist"]
+    "includes": [
+      "**",
+      "!**/node_modules",
+      "!**/.vinxi",
+      "!**/.output",
+      "!**/dist",
+      "!**/.claude",
+      "!**/routeTree.gen.ts"
+    ]
   }
 }

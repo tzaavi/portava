@@ -1,9 +1,9 @@
-import { HeadContent, Scripts, createRootRoute, Outlet } from "@tanstack/react-router"
-import * as React from "react"
+import { createRootRoute, HeadContent, Scripts } from "@tanstack/react-router"
+import type * as React from "react"
+import appCss from "~/app.css?url"
 import { AppSidebar } from "~/components/app-sidebar"
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "~/components/ui/sidebar"
 import { TooltipProvider } from "~/components/ui/tooltip"
-import appCss from "~/app.css?url"
 
 export const Route = createRootRoute({
   head: () => ({

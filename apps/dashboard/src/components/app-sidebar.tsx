@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router"
-import { LayoutDashboard, FolderOpen, Settings } from "lucide-react"
+import { FolderOpen, LayoutDashboard, Settings } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -30,12 +30,7 @@ export function AppSidebar() {
               {navItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
-                    render={
-                      <Link
-                        to={item.url}
-                        activeProps={{ className: "bg-sidebar-accent" }}
-                      />
-                    }
+                    render={<Link to={item.url} activeProps={{ className: "bg-sidebar-accent" }} />}
                   >
                     <item.icon />
                     <span>{item.title}</span>
