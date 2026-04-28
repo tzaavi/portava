@@ -46,6 +46,9 @@ create table portal (
   drive_archive_folder_id     text,
   slug                        text not null,
   status                      portal_status not null default 'active',
+  webhook_channel_id          text,
+  webhook_resource_id         text,
+  webhook_channel_token       text,
   created_at                  timestamptz not null default now(),
   unique (agency_id, slug)
 );

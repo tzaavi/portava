@@ -6,6 +6,9 @@ dev-dashboard:
 dev-portal:
     pnpm --filter @portava/portal dev
 
+dev-webhook:
+    pnpm --filter @portava/webhook dev
+
 db-start:
     docker compose up -d db
 

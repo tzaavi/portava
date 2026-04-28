@@ -1,4 +1,8 @@
 /** Represents the enum public.plan */
-type Plan = "free" | "starter" | "pro" | "agency"
+type Plan = 
+  | 'free'
+  | 'starter'
+  | 'pro'
+  | 'agency';
 
-export default Plan
+export default Plan;

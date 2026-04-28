@@ -27,6 +27,18 @@ variable "portal_run_sa_email" {
   type = string
 }
 
+variable "webhook_run_sa_email" {
+  type = string
+}
+
+variable "pubsub_topic_name" {
+  type = string
+}
+
+variable "webhook_token_secret_id" {
+  type = string
+}
+
 variable "database_url_secret_id" {
   type = string
 }
@@ -206,10 +218,101 @@ resource "google_cloud_run_v2_service_iam_member" "portal_public" {
   member   = "allUsers"
 }
 
+resource "google_cloud_run_v2_service" "webhook" {
+  project  = var.project
+  name     = "webhook"
+  location = var.region
+  ingress  = "INGRESS_TRAFFIC_ALL"
+
+  template {
+    service_account = var.webhook_run_sa_email
+
+    scaling {
+      min_instance_count = var.min_instances
+      max_instance_count = var.env == "prod" ? 10 : 3
+    }
+
+    volumes {
+      name = "cloudsql"
+      cloud_sql_instance {
+        instances = [var.sql_connection_name]
+      }
+    }
+
+    containers {
+      image = "${var.registry_url}/webhook:latest"
+      name  = "webhook"
+
+      ports {
+        container_port = 3003
+      }
+
+      env {
+        name = "DATABASE_URL"
+        value_source {
+          secret_key_ref {
+            secret  = var.database_url_secret_id
+            version = "latest"
+          }
+        }
+      }
+
+      env {
+        name = "GOOGLE_SERVICE_ACCOUNT_JSON"
+        value_source {
+          secret_key_ref {
+            secret  = var.drive_sa_key_secret_id
+            version = "latest"
+          }
+        }
+      }
+
+      env {
+        name = "PUBSUB_TOPIC_NAME"
+        value = var.pubsub_topic_name
+      }
+
+      env {
+        name = "WEBHOOK_TOKEN"
+        value_source {
+          secret_key_ref {
+            secret  = var.webhook_token_secret_id
+            version = "latest"
+          }
+        }
+      }
+
+      volume_mounts {
+        name       = "cloudsql"
+        mount_path = "/cloudsql"
+      }
+
+      resources {
+        limits = {
+          cpu    = "1"
+          memory = "256Mi"
+        }
+      }
+    }
+  }
+}
+
+resource "google_cloud_run_v2_service_iam_member" "webhook_public" {
+  project  = var.project
+  location = var.region
+  name     = google_cloud_run_v2_service.webhook.name
+  role     = "roles/run.invoker"
+  member   = "allUsers"
+}
+
 output "dashboard_url" {
   value = google_cloud_run_v2_service.dashboard.uri
 }
 
 output "portal_url" {
   value = google_cloud_run_v2_service.portal.uri
+}
+
+output "webhook_url" {
+  value = google_cloud_run_v2_service.webhook.uri
 }

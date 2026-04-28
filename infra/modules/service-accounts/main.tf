@@ -53,6 +53,29 @@ resource "google_project_iam_member" "portal_secrets" {
   member  = "serviceAccount:${google_service_account.portal_run.email}"
 }
 
+# Cloud Run identity for webhook service
+resource "google_service_account" "webhook_run" {
+  project      = var.project
+  account_id   = "webhook-run"
+  display_name = "Webhook Cloud Run"
+}
+
+resource "google_project_iam_member" "webhook_cloudsql" {
+  project = var.project
+  role    = "roles/cloudsql.client"
+  member  = "serviceAccount:${google_service_account.webhook_run.email}"
+}
+
+resource "google_project_iam_member" "webhook_secrets" {
+  project = var.project
+  role    = "roles/secretmanager.secretAccessor"
+  member  = "serviceAccount:${google_service_account.webhook_run.email}"
+}
+
+output "webhook_run_sa_email" {
+  value = google_service_account.webhook_run.email
+}
+
 output "drive_sa_email" {
   value = google_service_account.drive.email
 }

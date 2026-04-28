@@ -38,6 +38,7 @@ export function NewPortalSheet() {
   const [step, setStep] = React.useState(1)
   const [form, setForm] = React.useState<FormData>(INITIAL_FORM)
   const [submitting, setSubmitting] = React.useState(false)
+  const [error, setError] = React.useState<string | null>(null)
 
   function set<K extends keyof FormData>(key: K, value: FormData[K]) {
     setForm((prev) => ({ ...prev, [key]: value }))
@@ -47,10 +48,12 @@ export function NewPortalSheet() {
     setStep(1)
     setForm(INITIAL_FORM)
     setSubmitting(false)
+    setError(null)
   }
 
   async function handleCreate() {
     setSubmitting(true)
+    setError(null)
     try {
       await createPortal({
         data: {
@@ -63,6 +66,8 @@ export function NewPortalSheet() {
       setOpen(false)
       reset()
       router.invalidate()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong")
     } finally {
       setSubmitting(false)
     }
@@ -97,6 +102,10 @@ export function NewPortalSheet() {
           {step === 3 && <StepClientDetails form={form} set={set} />}
           {step === 4 && <StepReview form={form} />}
         </div>
+
+        {error && (
+          <p className="px-1 pb-2 text-sm text-destructive">{error}</p>
+        )}
 
         <SheetFooter>
           {step > 1 && (

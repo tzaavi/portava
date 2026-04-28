@@ -14,6 +14,7 @@ locals {
     "firebase.googleapis.com",
     "identitytoolkit.googleapis.com",
     "vpcaccess.googleapis.com",
+    "pubsub.googleapis.com",
   ]
 }
 
