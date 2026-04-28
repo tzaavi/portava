@@ -17,11 +17,24 @@ const navItems = [
   { title: "Settings", url: "/settings", icon: Settings },
 ]
 
+function PortavaLogo() {
+  return (
+    <div className="flex items-center gap-2.5">
+      <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-sky-500">
+        <svg viewBox="0 0 16 16" className="h-4 w-4 fill-white" aria-hidden="true">
+          <path d="M3 2h5.5a3 3 0 0 1 0 6H5v6H3V2zm2 2v2h3.5a1 1 0 0 0 0-2H5z" />
+        </svg>
+      </div>
+      <span className="text-base font-semibold tracking-tight text-sidebar-foreground">Portava</span>
+    </div>
+  )
+}
+
 export function AppSidebar() {
   return (
     <Sidebar>
-      <SidebarHeader className="border-b px-4 py-3">
-        <span className="text-lg font-semibold tracking-tight">Portava</span>
+      <SidebarHeader className="border-b border-sidebar-border px-4 py-3">
+        <PortavaLogo />
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
