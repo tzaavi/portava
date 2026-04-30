@@ -1,10 +1,11 @@
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router"
-import { ChevronLeft } from "lucide-react"
+import { CheckCircle2, ChevronLeft, Loader2 } from "lucide-react"
 import * as React from "react"
 import { Button } from "~/components/ui/button"
 import { Input } from "~/components/ui/input"
 import { Label } from "~/components/ui/label"
 import { createPortal } from "~/lib/server/create-portal"
+import { testDriveConnection } from "~/lib/server/test-drive-connection"
 
 const TOTAL_STEPS = 4
 
@@ -35,11 +36,13 @@ function NewPortalPage() {
   const { step } = Route.useSearch()
   const navigate = useNavigate({ from: "/portals/new" })
   const [form, setForm] = React.useState<FormData>(INITIAL_FORM)
+  const [driveVerified, setDriveVerified] = React.useState(false)
   const [submitting, setSubmitting] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
 
   function set<K extends keyof FormData>(key: K, value: FormData[K]) {
     setForm((prev) => ({ ...prev, [key]: value }))
+    if (key === "driveFolderId") setDriveVerified(false)
   }
 
   function goTo(s: number) {
@@ -68,12 +71,9 @@ function NewPortalPage() {
   }
 
   const canNext =
-    step === 1 ||
+    (step === 1 && form.driveFolderId.trim() !== "" && driveVerified) ||
     (step === 2 && form.agencyName.trim() !== "") ||
-    (step === 3 &&
-      form.clientName.trim() !== "" &&
-      form.clientEmail.trim() !== "" &&
-      form.driveFolderId.trim() !== "") ||
+    (step === 3 && form.clientName.trim() !== "" && form.clientEmail.trim() !== "") ||
     step === 4
 
   return (
@@ -110,7 +110,14 @@ function NewPortalPage() {
 
       {/* Step content */}
       <div className="rounded-xl border bg-card p-6 shadow-sm">
-        {step === 1 && <StepConnectDrive />}
+        {step === 1 && (
+          <StepConnectDrive
+            form={form}
+            set={set}
+            driveVerified={driveVerified}
+            setDriveVerified={setDriveVerified}
+          />
+        )}
         {step === 2 && <StepBranding form={form} set={set} />}
         {step === 3 && <StepClientDetails form={form} set={set} />}
         {step === 4 && <StepReview form={form} />}
@@ -142,22 +149,87 @@ function NewPortalPage() {
   )
 }
 
-function StepConnectDrive() {
+function StepConnectDrive({
+  form,
+  set,
+  driveVerified,
+  setDriveVerified,
+}: {
+  form: FormData
+  set: <K extends keyof FormData>(key: K, value: FormData[K]) => void
+  driveVerified: boolean
+  setDriveVerified: (v: boolean) => void
+}) {
+  const [testing, setTesting] = React.useState(false)
+  const [testError, setTestError] = React.useState<string | null>(null)
+  const [folderName, setFolderName] = React.useState<string | null>(null)
+
+  async function handleTest() {
+    setTesting(true)
+    setTestError(null)
+    setFolderName(null)
+    try {
+      const result = await testDriveConnection({ data: { folder_url: form.driveFolderId } })
+      setFolderName(result.name)
+      setDriveVerified(true)
+    } catch (err) {
+      setTestError(err instanceof Error ? err.message : "Could not access folder")
+      setDriveVerified(false)
+    } finally {
+      setTesting(false)
+    }
+  }
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <div>
         <h2 className="font-semibold">Connect Google Drive</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Share your client's Drive folder with the Portava service account so we can create the
-          portal structure and watch for new deliverables.
+          Share your client's Drive folder with the Portava service account, then paste the folder
+          URL below to verify access.
         </p>
       </div>
-      <div className="rounded-lg border bg-muted/50 px-4 py-3 font-mono text-sm select-all">
-        portava-drive@portava-stage.iam.gserviceaccount.com
+
+      <div className="space-y-1.5">
+        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          Service account email
+        </p>
+        <div className="rounded-lg border bg-muted/50 px-4 py-3 font-mono text-sm select-all">
+          portava-drive@portava-stage.iam.gserviceaccount.com
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Grant <strong>Editor</strong> access so Portava can create subfolders automatically.
+        </p>
       </div>
-      <p className="text-sm text-muted-foreground">
-        Grant <strong>Editor</strong> access so Portava can create subfolders automatically.
-      </p>
+
+      <div className="space-y-2">
+        <Label htmlFor="drive-folder">Drive folder URL or ID</Label>
+        <div className="flex gap-2">
+          <Input
+            id="drive-folder"
+            value={form.driveFolderId}
+            onChange={(e) => set("driveFolderId", e.target.value)}
+            placeholder="https://drive.google.com/drive/folders/…"
+            className="flex-1"
+          />
+          <Button
+            variant="outline"
+            onClick={handleTest}
+            disabled={testing || form.driveFolderId.trim() === ""}
+          >
+            {testing ? <Loader2 className="h-4 w-4 animate-spin" /> : "Test"}
+          </Button>
+        </div>
+
+        {driveVerified && folderName && (
+          <div className="flex items-center gap-2 text-sm text-emerald-600">
+            <CheckCircle2 className="h-4 w-4 flex-shrink-0" />
+            Connected to <span className="font-medium">{folderName}</span>
+          </div>
+        )}
+
+        {testError && <p className="text-sm text-destructive">{testError}</p>}
+      </div>
     </div>
   )
 }
@@ -237,15 +309,6 @@ function StepClientDetails({
           placeholder="e.g. hello@acme.com"
         />
       </div>
-      <div className="space-y-2">
-        <Label htmlFor="drive-folder">Drive folder URL or ID</Label>
-        <Input
-          id="drive-folder"
-          value={form.driveFolderId}
-          onChange={(e) => set("driveFolderId", e.target.value)}
-          placeholder="https://drive.google.com/drive/folders/…"
-        />
-      </div>
     </div>
   )
 }
@@ -260,9 +323,9 @@ function StepReview({ form }: { form: FormData }) {
         </p>
       </div>
       <dl className="divide-y text-sm">
+        <ReviewRow label="Drive folder" value={form.driveFolderId} />
         <ReviewRow label="Client" value={form.clientName} />
         <ReviewRow label="Email" value={form.clientEmail} />
-        <ReviewRow label="Drive folder" value={form.driveFolderId || "—"} />
         <ReviewRow label="Agency" value={form.agencyName} />
         <div className="flex items-center justify-between py-3">
           <dt className="text-muted-foreground">Brand color</dt>
