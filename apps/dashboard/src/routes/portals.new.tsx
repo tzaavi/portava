@@ -391,8 +391,14 @@ function StepConnectDrive({
       {method === "oauth" && (
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            Sign in with Google to browse and select your client's folder directly. Portava will
-            only request access to Drive — you'll choose exactly which folder to connect.
+            Don't want to manually share a folder with Portava? Use this option instead — pick your
+            client's folder from the Drive picker and Portava will automatically set up the share
+            for you.
+          </p>
+          <p className="text-xs text-muted-foreground">
+            This requires temporarily granting Portava access to your Google Drive. We only use it
+            to share the folder you pick — nothing else is read or modified. If you'd rather not
+            grant Drive access, use the <button type="button" className="underline underline-offset-2 hover:text-foreground" onClick={() => switchMethod("share")}>Share a folder</button> option instead.
           </p>
 
           {!driveVerified && (
