@@ -1,4 +1,4 @@
-import { Link, createFileRoute, useNavigate } from "@tanstack/react-router"
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
 import { CheckCircle2, ChevronLeft, Loader2 } from "lucide-react"
 import * as React from "react"
 import { Button } from "~/components/ui/button"
@@ -77,7 +77,7 @@ function NewPortalPage() {
     step === 4
 
   return (
-    <div className="mx-auto max-w-xl space-y-8">
+    <div className="mx-auto max-w-3xl space-y-8">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Link to="/portals" className="flex items-center gap-1 hover:text-foreground">
