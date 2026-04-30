@@ -17,6 +17,7 @@ export const getPortals = createServerFn().handler(async () => {
       "p.client_email",
       "p.slug",
       "p.status",
+      "p.drive_folder_id",
       "p.created_at",
       eb.fn.count("pf.id").filterWhere("pf.status", "=", "awaiting_review").as("pending_count"),
       eb.fn.max("e.created_at").as("last_activity"),

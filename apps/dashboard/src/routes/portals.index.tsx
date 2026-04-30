@@ -68,7 +68,7 @@ function PortalsPage() {
                     render={
                       // biome-ignore lint/a11y/useAnchorContent: children rendered by Button via render prop
                       <a
-                        href={`https://drive.google.com/drive/folders/${portal.id}`}
+                        href={`https://drive.google.com/drive/folders/${portal.drive_folder_id}`}
                         target="_blank"
                         rel="noreferrer"
                         aria-label="Open in Drive"
