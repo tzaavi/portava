@@ -1,17 +1,9 @@
-import { useRouter } from "@tanstack/react-router"
+import { Link, createFileRoute, useNavigate } from "@tanstack/react-router"
+import { ChevronLeft } from "lucide-react"
 import * as React from "react"
 import { Button } from "~/components/ui/button"
 import { Input } from "~/components/ui/input"
 import { Label } from "~/components/ui/label"
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "~/components/ui/sheet"
 import { createPortal } from "~/lib/server/create-portal"
 
 const TOTAL_STEPS = 4
@@ -32,10 +24,16 @@ const INITIAL_FORM: FormData = {
   driveFolderId: "",
 }
 
-export function NewPortalSheet() {
-  const router = useRouter()
-  const [open, setOpen] = React.useState(false)
-  const [step, setStep] = React.useState(1)
+export const Route = createFileRoute("/portals/new")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    step: Math.min(TOTAL_STEPS, Math.max(1, Number(search.step) || 1)),
+  }),
+  component: NewPortalPage,
+})
+
+function NewPortalPage() {
+  const { step } = Route.useSearch()
+  const navigate = useNavigate({ from: "/portals/new" })
   const [form, setForm] = React.useState<FormData>(INITIAL_FORM)
   const [submitting, setSubmitting] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
@@ -44,11 +42,9 @@ export function NewPortalSheet() {
     setForm((prev) => ({ ...prev, [key]: value }))
   }
 
-  function reset() {
-    setStep(1)
-    setForm(INITIAL_FORM)
-    setSubmitting(false)
+  function goTo(s: number) {
     setError(null)
+    navigate({ search: { step: s } })
   }
 
   async function handleCreate() {
@@ -63,9 +59,7 @@ export function NewPortalSheet() {
           brand_color: form.brandColor,
         },
       })
-      setOpen(false)
-      reset()
-      router.invalidate()
+      navigate({ to: "/portals" })
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong")
     } finally {
@@ -76,68 +70,90 @@ export function NewPortalSheet() {
   const canNext =
     step === 1 ||
     (step === 2 && form.agencyName.trim() !== "") ||
-    (step === 3 && form.clientName.trim() !== "" && form.clientEmail.trim() !== "") ||
+    (step === 3 &&
+      form.clientName.trim() !== "" &&
+      form.clientEmail.trim() !== "" &&
+      form.driveFolderId.trim() !== "") ||
     step === 4
 
   return (
-    <Sheet
-      open={open}
-      onOpenChange={(next) => {
-        setOpen(next)
-        if (!next) reset()
-      }}
-    >
-      <SheetTrigger render={<Button />}>+ New portal</SheetTrigger>
-      <SheetContent className="flex flex-col sm:max-w-md">
-        <SheetHeader>
-          <SheetTitle>New portal</SheetTitle>
-          <SheetDescription>
-            Step {step} of {TOTAL_STEPS}
-          </SheetDescription>
-        </SheetHeader>
+    <div className="mx-auto max-w-xl space-y-8">
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <Link to="/portals" className="flex items-center gap-1 hover:text-foreground">
+          <ChevronLeft className="h-4 w-4" />
+          Portals
+        </Link>
+        <span>/</span>
+        <span className="text-foreground">New portal</span>
+      </div>
 
-        <div className="flex-1 overflow-y-auto px-1 py-4">
-          {step === 1 && <StepConnectDrive />}
-          {step === 2 && <StepBranding form={form} set={set} />}
-          {step === 3 && <StepClientDetails form={form} set={set} />}
-          {step === 4 && <StepReview form={form} />}
-        </div>
+      {/* Header */}
+      <div>
+        <h1 className="text-2xl font-semibold">New portal</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Step {step} of {TOTAL_STEPS}
+        </p>
+      </div>
 
-        {error && (
-          <p className="px-1 pb-2 text-sm text-destructive">{error}</p>
+      {/* Step indicator */}
+      <div className="flex gap-1.5">
+        {Array.from({ length: TOTAL_STEPS }, (_, i) => (
+          <div
+            key={i}
+            className={`h-1.5 flex-1 rounded-full transition-colors ${
+              i + 1 <= step ? "bg-primary" : "bg-muted"
+            }`}
+          />
+        ))}
+      </div>
+
+      {/* Step content */}
+      <div className="rounded-xl border bg-card p-6 shadow-sm">
+        {step === 1 && <StepConnectDrive />}
+        {step === 2 && <StepBranding form={form} set={set} />}
+        {step === 3 && <StepClientDetails form={form} set={set} />}
+        {step === 4 && <StepReview form={form} />}
+      </div>
+
+      {/* Error */}
+      {error && <p className="text-sm text-destructive">{error}</p>}
+
+      {/* Navigation */}
+      <div className="flex justify-between">
+        {step > 1 ? (
+          <Button variant="outline" onClick={() => goTo(step - 1)}>
+            Back
+          </Button>
+        ) : (
+          <span />
         )}
-
-        <SheetFooter>
-          {step > 1 && (
-            <Button variant="outline" onClick={() => setStep((s) => s - 1)}>
-              Back
-            </Button>
-          )}
-          {step < TOTAL_STEPS ? (
-            <Button disabled={!canNext} onClick={() => setStep((s) => s + 1)}>
-              Next
-            </Button>
-          ) : (
-            <Button disabled={submitting} onClick={handleCreate}>
-              {submitting ? "Creating…" : "Create & send invite"}
-            </Button>
-          )}
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
+        {step < TOTAL_STEPS ? (
+          <Button disabled={!canNext} onClick={() => goTo(step + 1)}>
+            Continue
+          </Button>
+        ) : (
+          <Button disabled={submitting || !canNext} onClick={handleCreate}>
+            {submitting ? "Creating…" : "Create & send invite"}
+          </Button>
+        )}
+      </div>
+    </div>
   )
 }
 
 function StepConnectDrive() {
   return (
     <div className="space-y-4">
-      <h3 className="font-medium">Connect Google Drive</h3>
-      <p className="text-sm text-muted-foreground">
-        Share your client's Drive folder with the Portava service account so we can create the
-        portal structure and watch for new deliverables.
-      </p>
+      <div>
+        <h2 className="font-semibold">Connect Google Drive</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Share your client's Drive folder with the Portava service account so we can create the
+          portal structure and watch for new deliverables.
+        </p>
+      </div>
       <div className="rounded-lg border bg-muted/50 px-4 py-3 font-mono text-sm select-all">
-        portava@portava-app.iam.gserviceaccount.com
+        portava-drive@portava-stage.iam.gserviceaccount.com
       </div>
       <p className="text-sm text-muted-foreground">
         Grant <strong>Editor</strong> access so Portava can create subfolders automatically.
@@ -155,7 +171,12 @@ function StepBranding({
 }) {
   return (
     <div className="space-y-4">
-      <h3 className="font-medium">Agency branding</h3>
+      <div>
+        <h2 className="font-semibold">Agency branding</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          This branding will be shown to your client in their portal.
+        </p>
+      </div>
       <div className="space-y-2">
         <Label htmlFor="agency-name">Agency name</Label>
         <Input
@@ -191,7 +212,12 @@ function StepClientDetails({
 }) {
   return (
     <div className="space-y-4">
-      <h3 className="font-medium">Client details</h3>
+      <div>
+        <h2 className="font-semibold">Client details</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Tell us about the client this portal is for.
+        </p>
+      </div>
       <div className="space-y-2">
         <Label htmlFor="client-name">Client name</Label>
         <Input
@@ -227,13 +253,18 @@ function StepClientDetails({
 function StepReview({ form }: { form: FormData }) {
   return (
     <div className="space-y-4">
-      <h3 className="font-medium">Review</h3>
-      <dl className="space-y-3 text-sm">
+      <div>
+        <h2 className="font-semibold">Review</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Everything look right? We'll create the folders and send an invite.
+        </p>
+      </div>
+      <dl className="divide-y text-sm">
         <ReviewRow label="Client" value={form.clientName} />
         <ReviewRow label="Email" value={form.clientEmail} />
         <ReviewRow label="Drive folder" value={form.driveFolderId || "—"} />
         <ReviewRow label="Agency" value={form.agencyName} />
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between py-3">
           <dt className="text-muted-foreground">Brand color</dt>
           <dd className="flex items-center gap-2">
             <span
@@ -250,7 +281,7 @@ function StepReview({ form }: { form: FormData }) {
 
 function ReviewRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex items-center justify-between py-3">
       <dt className="text-muted-foreground">{label}</dt>
       <dd className="font-medium">{value}</dd>
     </div>

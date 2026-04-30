@@ -12,6 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as PortalsRouteImport } from './routes/portals'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PortalsIndexRouteImport } from './routes/portals.index'
+import { Route as PortalsNewRouteImport } from './routes/portals.new'
 
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
@@ -28,34 +30,49 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PortalsIndexRoute = PortalsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PortalsRoute,
+} as any)
+const PortalsNewRoute = PortalsNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => PortalsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/portals': typeof PortalsRoute
+  '/portals': typeof PortalsRouteWithChildren
   '/settings': typeof SettingsRoute
+  '/portals/new': typeof PortalsNewRoute
+  '/portals/': typeof PortalsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/portals': typeof PortalsRoute
   '/settings': typeof SettingsRoute
+  '/portals/new': typeof PortalsNewRoute
+  '/portals': typeof PortalsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/portals': typeof PortalsRoute
+  '/portals': typeof PortalsRouteWithChildren
   '/settings': typeof SettingsRoute
+  '/portals/new': typeof PortalsNewRoute
+  '/portals/': typeof PortalsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/portals' | '/settings'
+  fullPaths: '/' | '/portals' | '/settings' | '/portals/new' | '/portals/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/portals' | '/settings'
-  id: '__root__' | '/' | '/portals' | '/settings'
+  to: '/' | '/settings' | '/portals/new' | '/portals'
+  id: '__root__' | '/' | '/portals' | '/settings' | '/portals/new' | '/portals/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  PortalsRoute: typeof PortalsRoute
+  PortalsRoute: typeof PortalsRouteWithChildren
   SettingsRoute: typeof SettingsRoute
 }
 
@@ -82,12 +99,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/portals/': {
+      id: '/portals/'
+      path: '/'
+      fullPath: '/portals/'
+      preLoaderRoute: typeof PortalsIndexRouteImport
+      parentRoute: typeof PortalsRoute
+    }
+    '/portals/new': {
+      id: '/portals/new'
+      path: '/new'
+      fullPath: '/portals/new'
+      preLoaderRoute: typeof PortalsNewRouteImport
+      parentRoute: typeof PortalsRoute
+    }
   }
 }
 
+interface PortalsRouteChildren {
+  PortalsNewRoute: typeof PortalsNewRoute
+  PortalsIndexRoute: typeof PortalsIndexRoute
+}
+
+const PortalsRouteChildren: PortalsRouteChildren = {
+  PortalsNewRoute: PortalsNewRoute,
+  PortalsIndexRoute: PortalsIndexRoute,
+}
+
+const PortalsRouteWithChildren =
+  PortalsRoute._addFileChildren(PortalsRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  PortalsRoute: PortalsRoute,
+  PortalsRoute: PortalsRouteWithChildren,
   SettingsRoute: SettingsRoute,
 }
 export const routeTree = rootRouteImport

@@ -6,6 +6,7 @@ infra/**/.terraform.lock.hcl
 .output
 .vinxi
 .vite
+.tanstack
 dist
 
 .env
