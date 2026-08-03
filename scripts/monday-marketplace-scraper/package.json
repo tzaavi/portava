@@ -1,0 +1,13 @@
+{
+  "name": "monday-marketplace-scraper",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "discover": "node discover.mjs",
+    "scrape": "node scrape.mjs"
+  },
+  "dependencies": {
+    "playwright": "^1.48.0"
+  }
+}
